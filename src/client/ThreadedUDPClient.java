@@ -1,9 +1,15 @@
 package client;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+
+import data.Connection;
+import data.Packet;
+import data.PacketHandler;
 
 /**
  * A class for handling a multi-threaded instance of a UDP client
@@ -12,16 +18,16 @@ import java.net.UnknownHostException;
  */
 public class ThreadedUDPClient implements Runnable {
 	
-	private ServerConnection connection;
+	private Connection connection;
 	private boolean running;
 	
 	private DatagramSocket socket;
-	private Thread process, send;
+	private Thread process, send, receive;
 	
 	public ThreadedUDPClient(String addr, int port) {
 		try {
 			socket = new DatagramSocket();
-			connection = new ServerConnection(socket, InetAddress.getByName(addr), port);
+			connection = new Connection(socket, InetAddress.getByName(addr), port);
 			this.init();
 		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();
@@ -54,8 +60,25 @@ public class ThreadedUDPClient implements Runnable {
 	 * Receive data on the given server connection
 	 * @return
 	 */
-	public byte[] receive() {
-		return connection.receive();
+	public void receive(final PacketHandler handler) {
+		receive = new Thread("receive_thread") {
+			public void run() {
+				while(running) {
+					byte[] buffer = new byte[1024];
+					DatagramPacket dgpacket = new DatagramPacket(buffer, buffer.length);
+					
+					try {
+						socket.receive(dgpacket);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					
+					handler.process(new Packet(dgpacket.getData(), dgpacket.getAddress(), dgpacket.getPort()));
+				}
+			}
+		};
+		
+		receive.start();
 	}
 	
 	/**

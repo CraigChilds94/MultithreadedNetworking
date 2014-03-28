@@ -2,8 +2,6 @@ package data;
 
 import java.net.InetAddress;
 
-import server.ClientConnection;
-
 public class Packet {
 
 	private byte[] data;
@@ -15,7 +13,7 @@ public class Packet {
 	 * @param data The data to send
 	 * @param reciever The packets' reciever
 	 */
-	public Packet(byte[] data, ClientConnection receiver) {
+	public Packet(byte[] data, Connection receiver) {
 		this.data = data;
 		this.ip = receiver.getAddress();
 		this.port = receiver.getPort();

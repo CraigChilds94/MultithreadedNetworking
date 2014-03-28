@@ -1,4 +1,4 @@
-package client;
+package data;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -6,12 +6,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 /**
- * This class represents a connection to the server
- * @author craig
+ * This represents a connection via a socket, either server or client
+ * @author Craig
  *
  */
-public class ServerConnection {
-
+public class Connection {
 	private InetAddress addr;
 	private int port;
 	private DatagramSocket clientSocket;
@@ -21,10 +20,10 @@ public class ServerConnection {
 	 * @param addr
 	 * @param port
 	 */
-	public ServerConnection(DatagramSocket clientSocket, InetAddress addr, int port) {
+	public Connection(DatagramSocket socket, InetAddress addr, int port) {
 		this.addr = addr;
 		this.port = port;
-		this.clientSocket = clientSocket;
+		this.clientSocket = socket;
 	}
 	
 	/**
@@ -68,6 +67,14 @@ public class ServerConnection {
 	}
 	
 	/**
+	 * Get the address of this connection
+	 * @return
+	 */
+	public InetAddress getAddress() {
+		return this.addr;
+	}
+	
+	/**
 	 * Close the connection to the server
 	 */
 	public void close() {
@@ -79,5 +86,4 @@ public class ServerConnection {
 			}
 		}.start();
 	}
-
 }
