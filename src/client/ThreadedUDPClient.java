@@ -27,7 +27,7 @@ public class ThreadedUDPClient implements Runnable {
 	public ThreadedUDPClient(String addr, int port) {
 		try {
 			socket = new DatagramSocket();
-			connection = new Connection(socket, InetAddress.getByName(addr), port);
+			connection = new Connection(socket, InetAddress.getByName(addr), port, 0);
 			this.init();
 		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();
@@ -58,7 +58,6 @@ public class ThreadedUDPClient implements Runnable {
 	
 	/**
 	 * Receive data on the given server connection
-	 * @return
 	 */
 	public void receive(final PacketHandler handler) {
 		receive = new Thread("receive_thread") {

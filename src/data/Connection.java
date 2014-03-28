@@ -12,7 +12,7 @@ import java.net.InetAddress;
  */
 public class Connection {
 	private InetAddress addr;
-	private int port;
+	private int port, id;
 	private DatagramSocket clientSocket;
 	
 	/**
@@ -20,10 +20,11 @@ public class Connection {
 	 * @param addr
 	 * @param port
 	 */
-	public Connection(DatagramSocket socket, InetAddress addr, int port) {
+	public Connection(DatagramSocket socket, InetAddress addr, int port, int id) {
 		this.addr = addr;
 		this.port = port;
 		this.clientSocket = socket;
+		this.id = id;
 	}
 	
 	/**

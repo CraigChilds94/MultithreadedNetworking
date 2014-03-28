@@ -1,5 +1,6 @@
 package data;
 
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class Packet {
@@ -7,6 +8,7 @@ public class Packet {
 	private byte[] data;
 	private InetAddress ip;
 	private int port;
+	private Connection conn;
 	
 	/**
 	 * Create a new packet
@@ -15,8 +17,7 @@ public class Packet {
 	 */
 	public Packet(byte[] data, Connection receiver) {
 		this.data = data;
-		this.ip = receiver.getAddress();
-		this.port = receiver.getPort();
+		this.conn = receiver;
 	}
 	
 	/**
@@ -29,6 +30,8 @@ public class Packet {
 		this.data = data;
 		this.ip = ip;
 		this.port = port;
+		
+		this.conn = new Connection(null, ip, port, 10);
 	}
 	
 	/**
@@ -40,19 +43,32 @@ public class Packet {
 	}
 	
 	/**
-	 * Get the destination ip
+	 * Get the ip
 	 * @return the address of the receiver
 	 */
-	public InetAddress getDestinationAddr() {
+	public InetAddress getAddr() {
 		return ip;
 	}
 	
 	/**
-	 * Get the destination port
+	 * Get the port
 	 * @return the receivers port
 	 */
-	public int getDestinationPort() {
+	public int getPort() {
 		return port;
+	}
+	
+	/**
+	 * Get the connection on which this packet was sent
+	 * @return the connection
+	 */
+	public Connection getConnection() {
+		return this.conn;
+	}
+	
+	@Override
+	public String toString() {
+		return "Data: " + new String(this.data) + "\n From: " + getConnection().getAddress() + ":" + getConnection().getPort();
 	}
 
 }

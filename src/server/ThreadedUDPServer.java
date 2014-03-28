@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import data.Connection;
 import data.Packet;
 import data.PacketHandler;
+import data.UID;
 
 /**
  * A class for handling a multi-threaded instance of a UDP server
@@ -26,7 +27,7 @@ public class ThreadedUDPServer implements Runnable {
 	private Thread send, receive, process;
 	
 	/* Client relevant */
-	private ArrayList<Connection> clients;
+	public static ArrayList<Connection> CLIENTS = new ArrayList<Connection>();
 	
 	
 	/**
@@ -35,7 +36,6 @@ public class ThreadedUDPServer implements Runnable {
 	 */
 	public ThreadedUDPServer(int port) {
 		this.port = port;
-		this.clients = new ArrayList<Connection>();
 		
 		try {
 			this.init();
@@ -74,14 +74,14 @@ public class ThreadedUDPServer implements Runnable {
 				DatagramPacket dgpack = new DatagramPacket(
 						packet.getData(), 
 						packet.getData().length, 
-						packet.getDestinationAddr(), 
-						packet.getDestinationPort()
+						packet.getAddr(), 
+						packet.getPort()
 				);
 	
 				try {
 					socket.send(dgpack);
 				} catch (IOException e) {
-					e.printStackTrace();
+					System.out.println(e.getMessage());
 				}
 			}
 		};
@@ -94,8 +94,8 @@ public class ThreadedUDPServer implements Runnable {
 	 * @param packet
 	 */
 	public void broadcast(byte[] data) {
-		for(Connection c : clients) {
-			send(new Packet(data, c));
+		for(Connection c : CLIENTS) {
+			send(new Packet(data, c.getAddress(), c.getPort()));
 		}
 	}
 	
@@ -116,6 +116,7 @@ public class ThreadedUDPServer implements Runnable {
 						e.printStackTrace();
 					}
 					
+					//handler.process(new Packet(dgpacket.getData(), new Connection(socket, dgpacket.getAddress(), dgpacket.getPort(), UID.getIdentifier())));
 					handler.process(new Packet(dgpacket.getData(), dgpacket.getAddress(), dgpacket.getPort()));
 				}
 			}
@@ -123,7 +124,7 @@ public class ThreadedUDPServer implements Runnable {
 		
 		receive.start();
 	}
-
+	
 	/**
 	 * The run method of this runnable thread
 	 * object.
