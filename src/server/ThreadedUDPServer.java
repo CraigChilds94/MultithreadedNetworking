@@ -33,15 +33,12 @@ public class ThreadedUDPServer implements Runnable {
 	/**
 	 * Construct a new instance of a multi-threaded udp server
 	 * @param port
+	 * @throws SocketException 
 	 */
-	public ThreadedUDPServer(int port) {
+	public ThreadedUDPServer(int port) throws SocketException {
 		this.port = port;
 		
-		try {
-			this.init();
-		} catch (SocketException e) {
-			System.err.println("Unable to initialise the server..." + e.getMessage());
-		}
+		this.init();
 	}
 	
 	/**
@@ -80,9 +77,7 @@ public class ThreadedUDPServer implements Runnable {
 	
 				try {
 					socket.send(dgpack);
-				} catch (IOException e) {
-					System.out.println(e.getMessage());
-				}
+				} catch (IOException e) {}
 			}
 		};
 		
@@ -103,26 +98,28 @@ public class ThreadedUDPServer implements Runnable {
 	 * Wait for input... and use a PacketHandler to process the packet
 	 * @param handler The packet handler 
 	 */
-	public void receive(final PacketHandler handler) {
+	public void listen(final PacketHandler handler) {
 		receive = new Thread("receive_thread") {
 			public void run() {
 				while(running) {
-					byte[] buffer = new byte[1024];
-					DatagramPacket dgpacket = new DatagramPacket(buffer, buffer.length);
-					
-					try {
-						socket.receive(dgpacket);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					
-					//handler.process(new Packet(dgpacket.getData(), new Connection(socket, dgpacket.getAddress(), dgpacket.getPort(), UID.getIdentifier())));
-					handler.process(new Packet(dgpacket.getData(), dgpacket.getAddress(), dgpacket.getPort()));
+					receive(handler);
 				}
 			}
 		};
 		
 		receive.start();
+	}
+	
+	public void receive(PacketHandler handler) {
+		byte[] buffer = new byte[1024];
+		DatagramPacket dgpacket = new DatagramPacket(buffer, buffer.length);
+		
+		try {
+			socket.receive(dgpacket);
+		} catch (IOException e) {}
+		
+		//handler.process(new Packet(dgpacket.getData(), new Connection(socket, dgpacket.getAddress(), dgpacket.getPort(), UID.getIdentifier())));
+		handler.process(new Packet(dgpacket.getData(), dgpacket.getAddress(), dgpacket.getPort()));
 	}
 	
 	/**

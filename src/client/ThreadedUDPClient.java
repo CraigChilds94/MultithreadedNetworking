@@ -24,14 +24,10 @@ public class ThreadedUDPClient implements Runnable {
 	private DatagramSocket socket;
 	private Thread process, send, receive;
 	
-	public ThreadedUDPClient(String addr, int port) {
-		try {
-			socket = new DatagramSocket();
-			connection = new Connection(socket, InetAddress.getByName(addr), port, 0);
-			this.init();
-		} catch (SocketException | UnknownHostException e) {
-			e.printStackTrace();
-		}
+	public ThreadedUDPClient(String addr, int port) throws SocketException, UnknownHostException {
+		socket = new DatagramSocket();
+		connection = new Connection(socket, InetAddress.getByName(addr), port, 0);
+		this.init();
 	}
 	
 	/**
@@ -59,25 +55,29 @@ public class ThreadedUDPClient implements Runnable {
 	/**
 	 * Receive data on the given server connection
 	 */
-	public void receive(final PacketHandler handler) {
+	public void listen(final PacketHandler handler) {
 		receive = new Thread("receive_thread") {
 			public void run() {
 				while(running) {
-					byte[] buffer = new byte[1024];
-					DatagramPacket dgpacket = new DatagramPacket(buffer, buffer.length);
-					
-					try {
-						socket.receive(dgpacket);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					
-					handler.process(new Packet(dgpacket.getData(), dgpacket.getAddress(), dgpacket.getPort()));
+					receive(handler);
 				}
 			}
 		};
 		
 		receive.start();
+	}
+	
+	/**
+	 * Only receive one packet
+	 * @param handler
+	 */
+	public void receive(final PacketHandler handler) {
+		byte[] buffer = new byte[1024];
+		DatagramPacket dgpacket = new DatagramPacket(buffer, buffer.length);
+		try {
+			socket.receive(dgpacket);
+		} catch (IOException e) {}
+		handler.process(new Packet(dgpacket.getData(), dgpacket.getAddress(), dgpacket.getPort()));
 	}
 	
 	/**

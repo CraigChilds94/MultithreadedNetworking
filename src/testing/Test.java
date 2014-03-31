@@ -1,6 +1,10 @@
 package testing;
 
 import static org.junit.Assert.*;
+
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import client.ThreadedUDPClient;
 import data.Connection;
 import data.Packet;
@@ -15,10 +19,18 @@ public class Test {
 	
 	@org.junit.Test
 	public void test() {
-		
 		// Create our server and client intances
-		server = new ThreadedUDPServer(1337);
-		client = new ThreadedUDPClient("localhost", 1337);
+		try {
+			server = new ThreadedUDPServer(1337);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			client = new ThreadedUDPClient("localhost", 1337);
+		} catch (SocketException | UnknownHostException e) {
+			e.printStackTrace();
+		}
 		
 		// Set up a handler for receiving the packets
 		server.receive(new PacketHandler() {
@@ -46,9 +58,6 @@ public class Test {
 		});
 		
 		client.send("CON".getBytes());
-		
-		
-
 	}
 	
 	public void reply(Packet packet) {
