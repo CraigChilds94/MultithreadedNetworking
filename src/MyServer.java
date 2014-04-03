@@ -92,43 +92,43 @@ class ServerReceiver extends PacketHandler {
 	public void process(Packet packet) {
 		
 		// Get some information about this packet
-		byte[] data  = packet.getData();
+		byte[] pData  = packet.getData();
 		InetAddress addr = packet.getAddr();
 		int port = packet.getPort();
-		
-		System.out.println(new String(data + " from " + addr.getHostAddress() + ":" + port));
-		
-		String d = packet.getDataAsString(true);
 		String sAddr = addr.getHostAddress();
+		String packetData = packet.getDataAsString(true);
+		int header = Protocol.getPacketHeader(packetData);
+		String data = Protocol.getPacketData(packetData);
 		
 		// Checked to see if that client is allowed
 		if(forbidden.contains(sAddr)) {
-			this.server.send(new Packet("BLOCKED".getBytes(), addr, port));
+			this.server.send(new Packet(Protocol.makePacket(Protocol.BLOCKED, "").getBytes(), addr, port));
 			return;
 		}
 		
 		// Echo the string back
-		if(d.startsWith("ECHO_S:")) {
-			this.server.send(new Packet(("ECHO_S:" + d.split(":")[1]).getBytes(), addr, port));
+		if(header == Protocol.ECHO_S) {
+			Packet p = new Packet(Protocol.makePacket(Protocol.ECHO_S, data).getBytes(), addr, port);
+			this.server.send(p);
 			return;
 		}
 		
 		// See if a connection has been made
-		if(d.equals("CON")) {
-			this.server.send(new Packet("OK".getBytes(), addr, port));
+		if(header == Protocol.CON) {
+			Packet p = new Packet(Protocol.makePacket(Protocol.OK, "").getBytes(), addr, port);
+			this.server.send(p);
 			return;
 		}
 		
 		// Check for a given password
-		if(d.startsWith("PW:")) {
-			String pass = d.split(":")[1];
+		if(header == Protocol.PW) {
+
+			System.out.println(data + " : " + this.password);
 			
-			System.out.println(pass + " : " + this.password);
-			
-			if(pass.equals(this.password)) {
-				this.server.send(new Packet("PW_AUTH_OK".getBytes(), addr, port));
+			if(data.equals(this.password)) {
+				this.server.send(new Packet(Protocol.makePacket(Protocol.PW_AUTH_OK, "").getBytes(), addr, port));
 			} else {
-				this.server.send(new Packet("PW_AUTH_NOT_OK".getBytes(), addr, port));
+				this.server.send(new Packet(Protocol.makePacket(Protocol.PW_AUTH_NOT_OK, "").getBytes(), addr, port));
 			}
 			
 			return;
@@ -136,7 +136,8 @@ class ServerReceiver extends PacketHandler {
 		
 		// If the user has not yet authenticated then complain
 		if(!addr.equals(this.clientAddress) || port != this.clientPort) {
-			this.server.send(new Packet("ERROR: You are not yet authorised to access this server".getBytes(), addr, port));
+			String msg = "You are not yet authorised to access this server";
+			this.server.send(new Packet(Protocol.makePacket(Protocol.ERR,msg).getBytes(), addr, port));
 			return;
 		}
 	}

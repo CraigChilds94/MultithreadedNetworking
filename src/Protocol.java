@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 
 /**
  * This class holds static properties which represent the
@@ -34,6 +36,11 @@ public class Protocol {
 					  		FILE_REC			= 303;
 	
 	/**
+	 * Server acces stuff
+	 */
+	public static final int BLOCKED 			= 401;
+	
+	/**
 	 * Extract the protocol header from the given packet data
 	 * @param packetData
 	 * @return the header, ie. Protocol.PW
@@ -48,7 +55,12 @@ public class Protocol {
 	 * @return the data
 	 */
 	public static String getPacketData(String packetData) {
-		return splitPacketByProtocol(packetData)[1];
+		String[] p = splitPacketByProtocol(packetData);
+		
+		if(p.length > 1) {
+			return p[1];
+		}
+		return "";
 	}
 	
 	/**
@@ -73,7 +85,7 @@ public class Protocol {
 		
 		String msg = packetData.substring(1, packetData.length() - 1);
 		String[] parts = msg.split(":");
-		
+		System.out.println(msg);
 		return parts;
 	}
 }

@@ -21,7 +21,7 @@ public class AssgTest {
 			Response r = c.connect();
 			System.out.println(r);
 			
-			r = c.sendPassword("hellao");
+			r = c.sendPassword("hello");
 			System.out.println(r);
 			
 			r = c.echoString("testing echo");
