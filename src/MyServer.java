@@ -3,6 +3,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+import data.Connection;
 import data.Packet;
 import data.PacketHandler;
 import server.ThreadedUDPServer;
@@ -16,12 +17,12 @@ import server.ThreadedUDPServer;
 public class MyServer implements Server {
 	
 	private ThreadedUDPServer server;
-	private ArrayList<String> forbidden;
+	private List<String> forbidden;
 	private String password;
 
 	@Override
 	public void start(int port, String password, List<String> forbidden) throws NetException {
-		this.forbidden = (ArrayList<String>) forbidden;
+		this.forbidden = forbidden;
 		this.password = password;
 		
 		try {
@@ -70,8 +71,11 @@ class ServerReceiver extends PacketHandler {
 
 	private MyServer main;
 	private ThreadedUDPServer server;
-	private ArrayList<String> forbidden;
+	private List<String> forbidden;
 	private String password;
+	
+	private InetAddress clientAddress = null;
+	private int clientPort = 0;
 	
 	/**
 	 * Construct the handler with knowledge about our server implementation
@@ -80,7 +84,7 @@ class ServerReceiver extends PacketHandler {
 	public ServerReceiver(MyServer server) {
 		this.main = server;
 		this.server = this.main.getServer();
-		this.forbidden = (ArrayList<String>) this.main.getForbidden();
+		this.forbidden = this.main.getForbidden();
 		this.password = this.main.getPassword();
 	}
 	
@@ -94,8 +98,46 @@ class ServerReceiver extends PacketHandler {
 		
 		System.out.println(new String(data + " from " + addr.getHostAddress() + ":" + port));
 		
-		if(new String(data).trim().equals("CON")) {
+		String d = packet.getDataAsString(true);
+		String sAddr = addr.getHostAddress();
+		
+		// Checked to see if that client is allowed
+		if(forbidden.contains(sAddr)) {
+			this.server.send(new Packet("BLOCKED".getBytes(), addr, port));
+			return;
+		}
+		
+		// Echo the string back
+		if(d.startsWith("ECHO_S:")) {
+			this.server.send(new Packet(("ECHO_S:" + d.split(":")[1]).getBytes(), addr, port));
+			return;
+		}
+		
+		// See if a connection has been made
+		if(d.equals("CON")) {
 			this.server.send(new Packet("OK".getBytes(), addr, port));
+			return;
+		}
+		
+		// Check for a given password
+		if(d.startsWith("PW:")) {
+			String pass = d.split(":")[1];
+			
+			System.out.println(pass + " : " + this.password);
+			
+			if(pass.equals(this.password)) {
+				this.server.send(new Packet("PW_AUTH_OK".getBytes(), addr, port));
+			} else {
+				this.server.send(new Packet("PW_AUTH_NOT_OK".getBytes(), addr, port));
+			}
+			
+			return;
+		}
+		
+		// If the user has not yet authenticated then complain
+		if(!addr.equals(this.clientAddress) || port != this.clientPort) {
+			this.server.send(new Packet("ERROR: You are not yet authorised to access this server".getBytes(), addr, port));
+			return;
 		}
 	}
 	

@@ -43,6 +43,21 @@ public class Packet {
 	}
 	
 	/**
+	 * Return the data as a string, if trim set to true; trims leading and trailing whitespace
+	 * @param trim
+	 * @return the data as a string
+	 */
+	public String getDataAsString(boolean trim) {
+		String data = new String(this.getData());
+		
+		if(trim) {
+			data = data.trim();
+		}
+		
+		return data;
+	}
+	
+	/**
 	 * Get the ip
 	 * @return the address of the receiver
 	 */
