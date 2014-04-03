@@ -85,7 +85,6 @@ public class Protocol {
 		
 		String msg = packetData.substring(1, packetData.length() - 1);
 		String[] parts = msg.split(":");
-		System.out.println(msg);
 		return parts;
 	}
 }

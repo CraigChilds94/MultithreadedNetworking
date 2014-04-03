@@ -15,7 +15,10 @@ public class AssgTest {
 		Client c = Task2.makeClient();
 		
 		try {
-			s.start(1337, "hello", new ArrayList<String>());
+			ArrayList<String> f = new ArrayList<String>();
+			f.add("127.0.0.1");
+			
+			s.start(1337, "hello", f);
 			c.start("localhost", 1337);
 			
 			Response r = c.connect();

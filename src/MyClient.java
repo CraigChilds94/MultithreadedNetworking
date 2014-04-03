@@ -52,7 +52,9 @@ public class MyClient implements Client {
 			 	  	  					  break;
 					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
 				 	  					  break;
-				 	default:			  MyClient.lastResponse = new Problem("Something unexpected happened");
+					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
+										  break;
+				 	default:			  MyClient.lastResponse = new Problem(data);
 				 						  break;
 				}
 				
@@ -84,7 +86,9 @@ public class MyClient implements Client {
 			 	  	  						      break;
 					case Protocol.ERR:   	      MyClient.lastResponse = new Problem(data);
 				 	  					          break;
-				 	default:			          MyClient.lastResponse = new Problem("Something unexpected happened");
+					case Protocol.BLOCKED:        MyClient.lastResponse = new ClientBlocked();
+					  							  break;
+				 	default:			          MyClient.lastResponse = new Problem(data);
 				 						          break;
 				}
 			}
@@ -97,7 +101,7 @@ public class MyClient implements Client {
 	@Override
 	public void clientExit() throws NetException {
 		this.resetResponse();
-		this.client.send("EXIT".getBytes());
+		this.client.send(Protocol.makePacket(Protocol.EXIT, "").getBytes());
 		this.client.close();
 	}
 
@@ -125,7 +129,9 @@ public class MyClient implements Client {
 									 	  break;
 					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
 				 	  					  break;
-				 	default:			  MyClient.lastResponse = new Problem("Something unexpected happened");
+					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
+					  					  break;
+				 	default:			  MyClient.lastResponse = new Problem(data);
 				 						  break;
 				}
 			}
@@ -166,7 +172,9 @@ public class MyClient implements Client {
 									 	  break;
 					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
 				 	  					  break;
-				 	default:			  MyClient.lastResponse = new Problem("Something unexpected happened");
+					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
+					  					  break;
+				 	default:			  MyClient.lastResponse = new Problem(data);
 				 						  break;
 				}
 			}
@@ -196,7 +204,9 @@ public class MyClient implements Client {
 									 	  break;
 					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
 				 	  					  break;
-				 	default:			  MyClient.lastResponse = new Problem("Something unexpected happened");
+					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
+					  					  break;
+				 	default:			  MyClient.lastResponse = new Problem(data);
 				 						  break;
 				}
 			}

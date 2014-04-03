@@ -102,7 +102,7 @@ class ServerReceiver extends PacketHandler {
 		
 		// Checked to see if that client is allowed
 		if(forbidden.contains(sAddr)) {
-			this.server.send(new Packet(Protocol.makePacket(Protocol.BLOCKED, "").getBytes(), addr, port));
+			this.server.send(new Packet(Protocol.makePacket(Protocol.BLOCKED, "You are not allowed access to this server").getBytes(), addr, port));
 			return;
 		}
 		
@@ -122,8 +122,6 @@ class ServerReceiver extends PacketHandler {
 		
 		// Check for a given password
 		if(header == Protocol.PW) {
-
-			System.out.println(data + " : " + this.password);
 			
 			if(data.equals(this.password)) {
 				this.server.send(new Packet(Protocol.makePacket(Protocol.PW_AUTH_OK, "").getBytes(), addr, port));
