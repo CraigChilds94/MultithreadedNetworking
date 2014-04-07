@@ -34,6 +34,7 @@ public class AssgTest {
 			
 		} catch (NetException e) {
 			System.out.println(e.msg);
+			fail();
 		}
 	}
 	
@@ -48,9 +49,29 @@ public class AssgTest {
 			
 			Response r;
 			r = c.echoString("testing echo");
-			System.out.println(r.getClass());
+			System.out.println(r);
 
 			assertTrue("The server should have sent back an echo", r instanceof StringContent);
+		} catch (NetException e) {
+			System.out.println(e.msg);
+			fail();
+		}
+	}
+	
+	@Test
+	public void testFileSend() {
+		Server s = Task2.makeServer();
+		Client c = Task2.makeClient();
+		
+		try {
+			s.start(1234, "a", new ArrayList<String>());
+			c.start("localhost", 2561);
+			
+			Response r;
+			r = c.sendFile("Test.txt", "Hello");
+			System.out.println(r);
+
+			assertTrue("The server should have sent back an OK", r instanceof OK);
 		} catch (NetException e) {
 			System.out.println(e.msg);
 			fail();

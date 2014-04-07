@@ -74,17 +74,48 @@ public class Protocol {
 	}
 	
 	/**
+	 * Format the packet to support files
+	 * @return the formatted packet data
+	 */
+	public static String formatFileData(String fileName, String fileData) {
+		return "{" + fileName + ":" + fileData + "}";
+	}
+	
+	/**
+	 * Read an input of file data, extract the name and file contents
+	 * @param fileData
+	 * @return array of size 2 holding filename and contents
+	 */
+	public static String[] readFileData(String fileData) {
+		if(!isValid(fileData)) {
+			return null;
+		}
+		
+		String msg = fileData.substring(1, fileData.length() - 1);
+		return msg.split(":");
+	}
+	
+	private static boolean isValid(String data) {
+		if(data.length() < 1 || !data.startsWith("{") || !data.endsWith("}")) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * Split the packet up into header and data
 	 * @param packetData
 	 * @return an array of the two parts
 	 */
 	private static String[] splitPacketByProtocol(String packetData) {
-		if(packetData.length() < 1 || !packetData.startsWith("{") || !packetData.endsWith("}")) {
+		if(!isValid(packetData)) {
 			return null;
 		}
 		
 		String msg = packetData.substring(1, packetData.length() - 1);
-		String[] parts = msg.split(":");
-		return parts;
+		return msg.split(":");
+		
 	}
+	
 }

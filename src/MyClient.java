@@ -1,3 +1,4 @@
+import java.io.File;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -127,7 +128,7 @@ public class MyClient implements Client {
 				switch(header) {
 					case Protocol.DIR_LIST: MyClient.lastResponse = new DirectoryListing(data);
 									 	  break;
-					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
+					case Protocol.ERR:    MyClient.lastResponse = new CannotRecieveFile();
 				 	  					  break;
 					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
 					  					  break;
@@ -141,16 +142,67 @@ public class MyClient implements Client {
 	}
 
 	@Override
-	public Response sendFile(String fileName, String fileContent)
-			throws NetException {
-		// TODO Auto-generated method stub
-		return null;
+	public Response sendFile(String fileName, String fileContent) throws NetException {
+		this.resetResponse();
+		String packet = Protocol.makePacket(Protocol.FILE_SEND, Protocol.formatFileData(fileName, fileContent));
+		this.client.send(packet.getBytes());
+		
+		this.client.receive(new PacketHandler() {
+
+			@Override
+			public void process(Packet packet) {
+				// Extract the data from the packet received
+				String packetData = packet.getDataAsString(true);
+				int header = Protocol.getPacketHeader(packetData);
+				String data = Protocol.getPacketData(packetData);
+				
+				// Check for the headers
+				switch(header) {
+					case Protocol.FILE_SEND:MyClient.lastResponse = new FileContent(data);
+									 	  break;
+					case Protocol.ERR:    MyClient.lastResponse = new CannotSendFile();
+				 	  					  break;
+					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
+					  					  break;
+				 	default:			  MyClient.lastResponse = new Problem(data);
+				 						  break;
+				}
+			}
+			
+		});
+		
+		return MyClient.lastResponse;
 	}
 
 	@Override
 	public Response receiveFile(String fileName) throws NetException {
-		// TODO Auto-generated method stub
-		return null;
+		this.resetResponse();
+		this.client.send(Protocol.makePacket(Protocol.FILE_REC, fileName).getBytes());
+		this.client.receive(new PacketHandler() {
+
+			@Override
+			public void process(Packet packet) {
+				// Extract the data from the packet received
+				String packetData = packet.getDataAsString(true);
+				int header = Protocol.getPacketHeader(packetData);
+				String data = Protocol.getPacketData(packetData);
+				
+				// Check for the headers
+				switch(header) {
+					case Protocol.OK:     MyClient.lastResponse = new OK();
+									 	  break;
+					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
+				 	  					  break;
+					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
+					  					  break;
+				 	default:			  MyClient.lastResponse = new Problem(data);
+				 						  break;
+				}
+			}
+			
+		});
+		
+		return MyClient.lastResponse;
 	}
 
 	@Override
