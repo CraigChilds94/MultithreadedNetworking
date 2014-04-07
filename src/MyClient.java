@@ -42,6 +42,9 @@ public class MyClient implements Client {
 			public void process(Packet packet) {
 				// Extract the data from the packet received
 				String packetData = packet.getDataAsString(true);
+				
+				System.out.println("CON: --> " + packetData);
+				
 				int header = Protocol.getPacketHeader(packetData);
 				String data = Protocol.getPacketData(packetData);
 
@@ -102,7 +105,7 @@ public class MyClient implements Client {
 	@Override
 	public void clientExit() throws NetException {
 		this.resetResponse();
-		this.client.send(Protocol.makePacket(Protocol.EXIT, "").getBytes());
+		this.client.send(Protocol.makePacket(Protocol.EXIT_C, "").getBytes());
 		this.client.close();
 	}
 
@@ -158,9 +161,9 @@ public class MyClient implements Client {
 				
 				// Check for the headers
 				switch(header) {
-					case Protocol.FILE_SEND:MyClient.lastResponse = new FileContent(data);
+					case Protocol.OK:     MyClient.lastResponse = new OK();
 									 	  break;
-					case Protocol.ERR:    MyClient.lastResponse = new CannotSendFile();
+					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
 				 	  					  break;
 					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
 					  					  break;
@@ -189,9 +192,9 @@ public class MyClient implements Client {
 				
 				// Check for the headers
 				switch(header) {
-					case Protocol.OK:     MyClient.lastResponse = new OK();
+					case Protocol.FILE_SEND:MyClient.lastResponse = new FileContent(data);
 									 	  break;
-					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
+					case Protocol.ERR:    MyClient.lastResponse = new CannotSendFile();
 				 	  					  break;
 					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
 					  					  break;

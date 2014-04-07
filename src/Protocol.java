@@ -18,7 +18,8 @@ public class Protocol {
 						  	ERR 			= 103,
 						  	ECHO_S 			= 104,
 						  	ECHO_B 			= 105,
-						  	EXIT 			= 106;
+						  	EXIT_C 			= 106,
+							EXIT_S 			= 107;
 	
 	/**
 	 * Password Function
