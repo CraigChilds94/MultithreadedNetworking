@@ -1,6 +1,13 @@
+package testing;
 
 
 import static org.junit.Assert.*;
+import Client;
+import NetException;
+import Protocol;
+import Response;
+import Server;
+import Task2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +37,23 @@ public class AssgTest {
 			r = c.echoString("testing echo");
 			System.out.println(r);
 			
-			c.clientExit();
+			//c.clientExit();
+			//c.serverExit();
+			c.echoString("hello");
 			
 		} catch (NetException e) {
 			System.out.println(e.msg);
 			fail();
 		}
+	}
+	
+	@Test
+	public void test12() {
+		String s = Protocol.formatFileData("hello.txt", "");
+		String[] p = Protocol.readFileData(s);
+		
+		System.out.println("Original : " + s);
+		System.out.println("Parts -->  name: " + p[0] + " -- data: " + p[1]);
 	}
 	
 	/**

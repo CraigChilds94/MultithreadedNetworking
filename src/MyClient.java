@@ -43,7 +43,7 @@ public class MyClient implements Client {
 				// Extract the data from the packet received
 				String packetData = packet.getDataAsString(true);
 				
-				System.out.println("CON: --> " + packetData);
+				System.out.println(packetData);
 				
 				int header = Protocol.getPacketHeader(packetData);
 				String data = Protocol.getPacketData(packetData);
@@ -82,6 +82,8 @@ public class MyClient implements Client {
 				int header = Protocol.getPacketHeader(packetData);
 				String data = Protocol.getPacketData(packetData);
 				
+				System.out.println(packetData);
+				
 				// Check for the headers
 				switch(header) {
 					case Protocol.PW_AUTH_OK:     MyClient.lastResponse = new OK();
@@ -106,12 +108,65 @@ public class MyClient implements Client {
 	public void clientExit() throws NetException {
 		this.resetResponse();
 		this.client.send(Protocol.makePacket(Protocol.EXIT_C, "").getBytes());
-		this.client.close();
+		this.client.receive(new PacketHandler() {
+			 
+			@Override
+			 public void process(Packet packet) {
+				// Extract the data from the packet received
+				String packetData = packet.getDataAsString(true);
+				int header = Protocol.getPacketHeader(packetData);
+				String data = Protocol.getPacketData(packetData);
+				
+				System.out.println(packetData);
+				
+				// Check for the headers
+				switch(header) {
+					case Protocol.OK: 	  client.close();
+									 	  break;
+					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
+				 	  					  break;
+					case Protocol.PW_AUTH_NOT_OK: MyClient.lastResponse = new AuthenticationFailed();
+					      				  break;
+					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
+					  					  break;
+				 	default:			  break;
+				}
+			 }
+		});
 	}
 
 	@Override
 	public Response serverExit() throws NetException {
-		return null;
+		this.resetResponse();
+		this.client.send(Protocol.makePacket(Protocol.EXIT_S, "").getBytes());
+		this.client.receive(new PacketHandler() {
+			 
+			@Override
+			 public void process(Packet packet) {
+				// Extract the data from the packet received
+				String packetData = packet.getDataAsString(true);
+				int header = Protocol.getPacketHeader(packetData);
+				String data = Protocol.getPacketData(packetData);
+				
+				System.out.println(packetData);
+				
+				// Check for the headers
+				switch(header) {
+					case Protocol.OK: 	  MyClient.lastResponse = new OK();
+										  client.close();
+									 	  break;
+					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
+				 	  					  break;
+					case Protocol.PW_AUTH_NOT_OK: MyClient.lastResponse = new AuthenticationFailed();
+					      				  break;
+					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
+					  					  break;
+				 	default:			  break;
+				}
+			 }
+		});
+		
+		return MyClient.lastResponse;
 	}
 
 	@Override
@@ -127,12 +182,16 @@ public class MyClient implements Client {
 				int header = Protocol.getPacketHeader(packetData);
 				String data = Protocol.getPacketData(packetData);
 				
+				System.out.println(packetData);
+				
 				// Check for the headers
 				switch(header) {
 					case Protocol.DIR_LIST: MyClient.lastResponse = new DirectoryListing(data);
 									 	  break;
 					case Protocol.ERR:    MyClient.lastResponse = new CannotRecieveFile();
 				 	  					  break;
+					case Protocol.PW_AUTH_NOT_OK: MyClient.lastResponse = new AuthenticationFailed();
+					      			      break;
 					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
 					  					  break;
 				 	default:			  MyClient.lastResponse = new Problem(data);
@@ -141,7 +200,8 @@ public class MyClient implements Client {
 			}
 			
 		});
-		return null;
+		
+		return MyClient.lastResponse;
 	}
 
 	@Override
@@ -159,12 +219,16 @@ public class MyClient implements Client {
 				int header = Protocol.getPacketHeader(packetData);
 				String data = Protocol.getPacketData(packetData);
 				
+				System.out.println(packetData);
+				
 				// Check for the headers
 				switch(header) {
 					case Protocol.OK:     MyClient.lastResponse = new OK();
 									 	  break;
-					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
+					case Protocol.ERR:    MyClient.lastResponse = new CannotSendFile();
 				 	  					  break;
+					case Protocol.PW_AUTH_NOT_OK: MyClient.lastResponse = new AuthenticationFailed();
+					      				  break;
 					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
 					  					  break;
 				 	default:			  MyClient.lastResponse = new Problem(data);
@@ -190,12 +254,16 @@ public class MyClient implements Client {
 				int header = Protocol.getPacketHeader(packetData);
 				String data = Protocol.getPacketData(packetData);
 				
+				System.out.println(packetData);
+				
 				// Check for the headers
 				switch(header) {
-					case Protocol.FILE_SEND:MyClient.lastResponse = new FileContent(data);
+					case Protocol.FILE_SEND:MyClient.lastResponse = new FileContent(data.trim());
 									 	  break;
-					case Protocol.ERR:    MyClient.lastResponse = new CannotSendFile();
+					case Protocol.ERR:    MyClient.lastResponse = new CannotRecieveFile();
 				 	  					  break;
+					case Protocol.PW_AUTH_NOT_OK: MyClient.lastResponse = new AuthenticationFailed();
+					      				  break;
 					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
 					  					  break;
 				 	default:			  MyClient.lastResponse = new Problem(data);
@@ -221,12 +289,16 @@ public class MyClient implements Client {
 				int header = Protocol.getPacketHeader(packetData);
 				String data = Protocol.getPacketData(packetData);
 				
+				System.out.println(packetData);
+				
 				// Check for the headers
 				switch(header) {
 					case Protocol.ECHO_B: MyClient.lastResponse = new ByteArrayContent(data.getBytes());
 									 	  break;
 					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
 				 	  					  break;
+					case Protocol.PW_AUTH_NOT_OK: MyClient.lastResponse = new AuthenticationFailed();
+					      				  break;
 					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
 					  					  break;
 				 	default:			  MyClient.lastResponse = new Problem(data);
@@ -253,12 +325,16 @@ public class MyClient implements Client {
 				int header = Protocol.getPacketHeader(packetData);
 				String data = Protocol.getPacketData(packetData);
 				
+				System.out.println(packetData);
+				
 				// Check for the headers
 				switch(header) {
 					case Protocol.ECHO_S: MyClient.lastResponse = new StringContent(data);
 									 	  break;
 					case Protocol.ERR:    MyClient.lastResponse = new Problem(data);
 				 	  					  break;
+					case Protocol.PW_AUTH_NOT_OK: MyClient.lastResponse = new AuthenticationFailed();
+					      				  break;
 					case Protocol.BLOCKED:MyClient.lastResponse = new ClientBlocked();
 					  					  break;
 				 	default:			  MyClient.lastResponse = new Problem(data);

@@ -130,4 +130,12 @@ public class ThreadedUDPServer implements Runnable {
 		running = true;
 		System.out.println("Server started on port " + port);
 	}
+	
+	/**
+	 * Close the current connection for this client
+	 */
+	public void close() {
+		socket.close();
+		running = false;
+	}
 }

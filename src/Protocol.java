@@ -71,7 +71,7 @@ public class Protocol {
 	 * @return the protocol matching packet data
 	 */
 	public static String makePacket(int header, String data) {
-		return "{" + header + ":" + data + "}";
+		return "{" + header + ":P:" + data + "}";
 	}
 	
 	/**
@@ -79,7 +79,7 @@ public class Protocol {
 	 * @return the formatted packet data
 	 */
 	public static String formatFileData(String fileName, String fileData) {
-		return "{" + fileName + ":" + fileData + "}";
+		return "{" + fileName + ":F:" + fileData + "}";
 	}
 	
 	/**
@@ -89,11 +89,12 @@ public class Protocol {
 	 */
 	public static String[] readFileData(String fileData) {
 		if(!isValid(fileData)) {
+			System.out.println("not valid");
 			return null;
 		}
 		
-		String msg = fileData.substring(1, fileData.length() - 1);
-		return msg.split(":");
+		String msg = fileData.substring(1, fileData.length() - 1) + " ";
+		return msg.split(":F:");
 	}
 	
 	private static boolean isValid(String data) {
@@ -115,7 +116,7 @@ public class Protocol {
 		}
 		
 		String msg = packetData.substring(1, packetData.length() - 1);
-		return msg.split(":");
+		return msg.split(":P:");
 		
 	}
 	
